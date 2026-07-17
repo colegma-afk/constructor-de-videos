@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Constructor de Videos Educativos</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>🎬 Constructor de Videos Educativos</h1>
+    <p>Genera videos para tus clases a partir de un tema o prompt, con IA.</p>
+  </header>
+
+  <main class="layout">
+    <section class="panel form-panel">
+      <h2>1. Describe el video</h2>
+
+      <details class="banco-temas" open>
+        <summary>📚 Banco de temas (textos escolares MINEDUC)</summary>
+        <div class="grid-2">
+          <div>
+            <label for="bancoNivel">Nivel</label>
+            <select id="bancoNivel">
+              <option value="">Elige un nivel…</option>
+            </select>
+          </div>
+          <div>
+            <label for="bancoMateria">Materia</label>
+            <select id="bancoMateria" disabled>
+              <option value="">Elige un nivel primero…</option>
+            </select>
+          </div>
+        </div>
+        <label for="bancoTema">Tema sugerido</label>
+        <select id="bancoTema" disabled>
+          <option value="">Elige una materia primero…</option>
+        </select>
+        <button id="btnUsarTema" class="btn-secondary" type="button" disabled>Usar este tema ↓</button>
+
+        <p class="hint recursos-hint">¿No encuentras el tema? Búscalo en estos sitios de juegos y recursos educativos:</p>
+        <div id="recursosExternos" class="recursos-externos"></div>
+      </details>
+
+      <label for="tema">Tema o prompt del video</label>
+      <textarea id="tema" rows="3" placeholder="Ej: El ciclo del agua explicado para 4to básico, con ejemplos cotidianos"></textarea>
+
+      <label for="objetivo">Objetivo de aprendizaje (opcional)</label>
+      <textarea id="objetivo" rows="2" placeholder="Ej: Que el estudiante identifique las etapas del ciclo del agua y las relacione con el clima de su región"></textarea>
+      <p class="hint">Inspirado en EdutekaLab: contarle al motor QUÉ debe aprender el estudiante ayuda a generar un guion más enfocado, no solo informativo.</p>
+
+      <div class="grid-2">
+        <div>
+          <label for="idioma">Idioma</label>
+          <select id="idioma">
+            <option value="es">Español</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div>
+          <label for="voz">Voz (narrador)</label>
+          <select id="voz">
+            <option value="es-CL-CatalinaNeural">Catalina (mujer, Chile)</option>
+            <option value="es-CL-LorenzoNeural">Lorenzo (hombre, Chile)</option>
+            <option value="es-ES-ElviraNeural">Elvira (mujer, España)</option>
+            <option value="es-ES-AlvaroNeural">Álvaro (hombre, España)</option>
+            <option value="es-MX-DaliaNeural">Dalia (mujer, México)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label for="orientacion">Formato</label>
+          <select id="orientacion">
+            <option value="16:9">Horizontal 16:9 (proyector/TV)</option>
+            <option value="9:16">Vertical 9:16 (celular/redes)</option>
+          </select>
+        </div>
+        <div>
+          <label for="duracion">Duración aproximada</label>
+          <select id="duracion">
+            <option value="1">Corta (~30-45 seg)</option>
+            <option value="2" selected>Media (~1-2 min)</option>
+            <option value="3">Larga (~2-3 min)</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="subtitulos" checked>
+        Incluir subtítulos
+      </label>
+
+      <p class="hint">El material visual se busca automáticamente en Pexels según las palabras clave del guion.</p>
+
+      <label for="perfilDua">Perfil de adecuación (opcional)</label>
+      <select id="perfilDua">
+        <option value="">Ninguno (versión estándar)</option>
+      </select>
+      <p id="perfilDuaDesc" class="hint" hidden></p>
+
+      <button id="btnGenerar" class="btn-primary">Generar video</button>
+
+      <details class="config-details">
+        <summary>Conexión al motor (MoneyPrinterTurbo)</summary>
+        <label for="apiUrl">URL del servidor API</label>
+        <input type="text" id="apiUrl" value="https://moneyprinterturbo-api-wlb5.onrender.com">
+        <p class="hint">Por defecto usa el servidor en Render (funciona desde cualquier lugar). Cambia a http://127.0.0.1:8080 si prefieres correr el motor en tu Mac.</p>
+      </details>
+    </section>
+
+    <section class="panel result-panel">
+      <h2>2. Resultado</h2>
+      <div id="estadoVacio" class="estado-vacio">
+        Aquí aparecerá el progreso y el video generado.
+      </div>
+
+      <div id="progresoWrap" class="progreso-wrap" hidden>
+        <p id="progresoTexto">Preparando…</p>
+        <div class="barra">
+          <div id="barraFill" class="barra-fill"></div>
+        </div>
+      </div>
+
+      <div id="errorWrap" class="error-wrap" hidden>
+        <p id="errorTexto"></p>
+      </div>
+
+      <div id="videoWrap" class="video-wrap" hidden>
+        <video id="videoPlayer" controls></video>
+        <a id="descargarLink" class="btn-secondary" download>Descargar video</a>
+      </div>
+
+      <div id="fichaWrap" class="ficha-wrap" hidden>
+        <div id="fichaAdecuacion" class="ficha-bloque" hidden></div>
+        <div id="fichaPedagogica" class="ficha-bloque" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="temas.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
