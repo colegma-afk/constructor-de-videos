@@ -174,6 +174,20 @@ async function generarVideo() {
     subtitle_enabled: el("subtitulos").checked,
     paragraph_number: Number(el("duracion").value),
     video_source: "pexels",
+    // Sin esto el motor mezcla los clips al azar, sin relación con qué se
+    // está narrando en cada momento — con esto los busca y ordena según la
+    // secuencia real del guion, más coherente para contenido educativo.
+    match_materials_to_script: true,
+    // Default del motor es 2 threads para codificar; la mayoría de las Mac
+    // modernas tienen más núcleos disponibles, así que esto acelera el
+    // renderizado sin afectar calidad ni coherencia.
+    n_threads: 4,
+    // El motor recodifica cada segmento de clip individualmente antes de
+    // unirlos (uno por uno, en serie) — con el default de 5s, un guion de
+    // ~1 minuto necesita 15+ segmentos separados, y esa es la etapa más
+    // lenta de todo el proceso. Con segmentos de 10s se necesita la mitad,
+    // cortando esa etapa a más o menos la mitad del tiempo.
+    video_clip_duration: 10,
   };
 
   const promptPartes = [];
@@ -329,7 +343,11 @@ async function revisarEstadoActual() {
     if (state === 1) {
       detenerPolling();
       btnGenerar.disabled = false;
-      const video = task.combined_videos?.[0] ?? task.videos?.[0];
+      // IMPORTANTE: usar `videos` (final-1.mp4) — es el archivo terminado, con
+      // narración y subtítulos incrustados. `combined_videos` (combined-1.mp4)
+      // es el intermedio: solo los clips pegados, SIN audio y SIN subtítulos.
+      // Priorizar combined_videos mostraba el video mudo y sin texto.
+      const video = task.videos?.[0] ?? task.combined_videos?.[0];
       if (video) {
         mostrarVideo(resolverUrl(apiBase, video), perfilKey);
       } else {
