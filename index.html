@@ -51,6 +51,17 @@
 
       <div class="grid-2">
         <div>
+          <label for="curso">Curso o nivel (opcional)</label>
+          <input type="text" id="curso" placeholder="Ej: 4° básico">
+        </div>
+        <div>
+          <label for="materia">Asignatura (opcional)</label>
+          <input type="text" id="materia" placeholder="Ej: Ciencias Naturales">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
           <label for="idioma">Idioma</label>
           <select id="idioma">
             <option value="es">Español</option>
@@ -101,6 +112,8 @@
       <p id="perfilDuaDesc" class="hint" hidden></p>
 
       <button id="btnGenerar" class="btn-primary">Generar video</button>
+      <button id="btnGenerarGuia" class="btn-primary btn-secundario-color" type="button">📄 Generar guía y tarea imprimible</button>
+      <p class="hint">Usa el mismo tema/objetivo/curso de arriba, pero no requiere generar el video: en segundos obtienes una guía con contenido, actividades, tarea y pauta de respuestas, lista para imprimir.</p>
 
       <details class="config-details">
         <summary>Conexión al motor (MoneyPrinterTurbo)</summary>
@@ -135,6 +148,27 @@
       <div id="fichaWrap" class="ficha-wrap" hidden>
         <div id="fichaAdecuacion" class="ficha-bloque" hidden></div>
         <div id="fichaPedagogica" class="ficha-bloque" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel guia-panel">
+      <h2>3. Guía y tarea imprimible</h2>
+
+      <div id="guiaVacio" class="estado-vacio">
+        Genera una guía de estudio con contenido, actividades y tarea para imprimir y repartir en clase.
+      </div>
+
+      <div id="guiaCargando" class="estado-vacio" hidden>Generando guía…</div>
+
+      <div id="guiaErrorWrap" class="error-wrap" hidden>
+        <p id="guiaErrorTexto"></p>
+      </div>
+
+      <div id="guiaImprimible" class="guia-imprimible" hidden>
+        <div class="guia-acciones no-imprimir">
+          <button id="btnImprimirGuia" class="btn-secondary" type="button">🖨️ Imprimir / Guardar como PDF</button>
+        </div>
+        <div id="guiaContenido"></div>
       </div>
     </section>
   </main>

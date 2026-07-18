@@ -111,6 +111,13 @@ textarea, select, input[type="text"] {
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.btn-secundario-color {
+  margin-top: 10px;
+  background: #0f766e;
+}
+
+.btn-secundario-color:hover { background: #0d9488; }
+
 .btn-secondary {
   display: inline-block;
   margin-top: 12px;
@@ -272,4 +279,96 @@ textarea, select, input[type="text"] {
   font-size: 11px;
   color: var(--muted);
   opacity: 0.8;
+}
+
+.guia-panel {
+  grid-column: 1 / -1;
+}
+
+.guia-acciones {
+  margin-bottom: 16px;
+}
+
+.guia-imprimible {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+}
+
+#guiaContenido h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.guia-meta {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#guiaContenido h3 {
+  margin: 18px 0 6px;
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+#guiaContenido p, #guiaContenido li {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#guiaContenido ul, #guiaContenido ol {
+  padding-left: 20px;
+  margin: 0;
+}
+
+#guiaContenido ol li {
+  margin-bottom: 6px;
+}
+
+.guia-pauta {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+/* Al imprimir: mostrar solo la guía, en blanco y negro, sin el resto de la
+   app (que está pensada para pantalla oscura, no para papel). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #guiaImprimible, #guiaImprimible * {
+    visibility: visible;
+  }
+
+  #guiaImprimible {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    border: none;
+    padding: 0;
+    background: #fff;
+    color: #000;
+  }
+
+  #guiaImprimible, #guiaImprimible * {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .no-imprimir {
+    display: none !important;
+  }
+
+  .guia-pauta {
+    page-break-before: always;
+    border-top: none;
+    padding-top: 0;
+  }
 }

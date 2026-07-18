@@ -69,6 +69,15 @@ const fichaWrap = el("fichaWrap");
 const fichaAdecuacion = el("fichaAdecuacion");
 const fichaPedagogica = el("fichaPedagogica");
 
+const btnGenerarGuia = el("btnGenerarGuia");
+const guiaVacio = el("guiaVacio");
+const guiaCargando = el("guiaCargando");
+const guiaErrorWrap = el("guiaErrorWrap");
+const guiaErrorTexto = el("guiaErrorTexto");
+const guiaImprimible = el("guiaImprimible");
+const guiaContenido = el("guiaContenido");
+const btnImprimirGuia = el("btnImprimirGuia");
+
 let pollTimer = null;
 let tareaEnCurso = null; // { taskId, apiBase } de la generación activa, o null
 let generacionActual = 0; // evita que una ficha pedagógica tardía de una
@@ -327,6 +336,104 @@ function renderFichaPedagogica(ficha) {
   `;
 }
 
+// ---- Guía de estudio y tarea imprimible ----
+// Independiente del video: solo necesita el tema/objetivo/curso ya escritos
+// arriba y responde en segundos (un solo llamado al LLM), sin esperar el
+// renderizado del video.
+
+function resetGuiaPanel() {
+  guiaVacio.hidden = true;
+  guiaCargando.hidden = true;
+  guiaErrorWrap.hidden = true;
+  guiaImprimible.hidden = true;
+}
+
+function mostrarGuiaCargando() {
+  resetGuiaPanel();
+  guiaCargando.hidden = false;
+}
+
+function mostrarGuiaError(mensaje) {
+  resetGuiaPanel();
+  guiaErrorWrap.hidden = false;
+  guiaErrorTexto.textContent = mensaje;
+}
+
+function numeradaHtml(items) {
+  return `<ol>${items.map((i) => `<li>${i}</li>`).join("")}</ol>`;
+}
+
+function renderGuia(guia) {
+  resetGuiaPanel();
+  guiaImprimible.hidden = false;
+
+  const meta = [guia.curso, guia.objetivo_aprendizaje].filter(Boolean).join(" · ");
+
+  guiaContenido.innerHTML = `
+    <h1>${guia.titulo}</h1>
+    ${meta ? `<p class="guia-meta">${meta}</p>` : ""}
+    ${guia.contenido ? `<h3>Contenido</h3><p class="guia-contenido">${guia.contenido}</p>` : ""}
+    ${guia.conceptos_clave?.length ? `<h3>Conceptos clave</h3>${listaHtml(guia.conceptos_clave)}` : ""}
+    ${guia.ejemplo_resuelto ? `<h3>Ejemplo resuelto</h3><p class="guia-contenido">${guia.ejemplo_resuelto}</p>` : ""}
+    ${guia.actividades?.length ? `<h3>Actividades</h3>${numeradaHtml(guia.actividades)}` : ""}
+    ${guia.tarea?.length ? `<h3>Tarea para la casa</h3>${numeradaHtml(guia.tarea)}` : ""}
+    ${guia.pauta_respuestas?.length ? `<div class="guia-pauta"><h3>Pauta de respuestas (uso docente)</h3>${numeradaHtml(guia.pauta_respuestas)}</div>` : ""}
+    <p class="ficha-nota">Generada por IA a partir del tema/objetivo ingresados. Revísala antes de repartirla en clase.</p>
+  `;
+}
+
+async function generarGuia() {
+  const tema = el("tema").value.trim();
+  if (!tema) {
+    mostrarGuiaError("Escribe un tema o prompt arriba antes de generar la guía.");
+    return;
+  }
+
+  const objetivo = el("objetivo").value.trim();
+  const curso = el("curso").value.trim();
+  const materia = el("materia").value.trim();
+  const perfilKey = el("perfilDua").value;
+  const perfil = perfilKey ? PERFILES_DUA[perfilKey] : null;
+  const apiBase = el("apiUrl").value.trim().replace(/\/$/, "");
+
+  const body = {
+    topic: tema,
+    course: curso,
+    subject_area: materia,
+    objective: objetivo,
+    language: el("idioma").value === "en" ? "en" : "es",
+  };
+  if (perfil) {
+    body.adaptation_profile = perfil.estrategias.join(" ");
+  }
+
+  btnGenerarGuia.disabled = true;
+  mostrarGuiaCargando();
+
+  try {
+    const resp = await fetch(`${apiBase}/api/v1/study-guide`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) {
+      const detalle = await resp.text();
+      throw new Error(`El servidor respondió ${resp.status}: ${detalle}`);
+    }
+    const data = await resp.json();
+    const guia = data?.data;
+    if (!guia || !guia.titulo) throw new Error("La respuesta no incluyó una guía válida.");
+    renderGuia(guia);
+  } catch (err) {
+    mostrarGuiaError(`No se pudo generar la guía en ${apiBase}. Detalle: ${err.message}`);
+  } finally {
+    btnGenerarGuia.disabled = false;
+  }
+}
+
+btnGenerarGuia.addEventListener("click", generarGuia);
+btnImprimirGuia.addEventListener("click", () => window.print());
+
 async function revisarEstadoActual() {
   if (!tareaEnCurso) return;
   const { taskId, apiBase, perfilKey } = tareaEnCurso;
@@ -451,6 +558,8 @@ function initBancoTemas() {
     if (!tema) return;
     const nivelLabel = nombresNivel[nivelKey] || nivelKey;
     el("tema").value = `${tema} (${materia}, ${curso} — ${nivelLabel})`;
+    el("curso").value = `${curso} — ${nivelLabel}`;
+    el("materia").value = materia;
   });
 
   const contenedorRecursos = el("recursosExternos");
