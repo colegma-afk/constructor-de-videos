@@ -507,3 +507,18 @@ function initApiUrl() {
 }
 
 initApiUrl();
+
+// ---- Despertar el motor apenas se carga la página ----
+// Render (plan gratis) apaga el servidor tras ~15 min sin uso; la primera
+// petición después de eso tarda 10-50s en "despertar" y puede parecer que
+// el servidor está caído. Disparamos un ping silencioso al cargar la página
+// para que, cuando el docente termine de llenar el formulario, el motor ya
+// esté despierto. Si falla, no mostramos nada: el flujo normal ya maneja
+// errores de conexión al generar.
+function despertarMotor() {
+  const apiBase = el("apiUrl").value.trim().replace(/\/$/, "");
+  if (!apiBase) return;
+  fetch(`${apiBase}/`, { mode: "cors" }).catch(() => {});
+}
+
+despertarMotor();
