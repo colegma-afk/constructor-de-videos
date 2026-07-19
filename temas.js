@@ -1849,6 +1849,11 @@ const BANCO_TEMAS = {
       "nombre": "Cerebriti",
       "url": "https://www.cerebriti.com/",
       "cobertura": "Cultura general y trivia por tema, todas las edades"
+    },
+    {
+      "nombre": "VideoTutor",
+      "url": "https://videotutor.io/en",
+      "cobertura": "Secundaria y superior: videos animados interactivos de matemáticas/STEM, con tutoría en tiempo real"
     }
   ]
 };
