@@ -434,6 +434,14 @@ async function generarGuia() {
 btnGenerarGuia.addEventListener("click", generarGuia);
 btnImprimirGuia.addEventListener("click", () => window.print());
 
+// Un 502/504 puntual de Render durante un redeploy es normal y se recupera
+// solo; por eso los primeros fallos de polling se ignoran en silencio. Pero
+// si el servidor se cae de verdad a mitad de la generación (contenedor
+// reiniciado, tarea perdida), sin este límite la página se queda mostrando
+// "Generando…" para siempre, sin avisar nada — MAX_FALLOS_POLLING corta ese
+// silencio tras ~30s de fallos seguidos y muestra un error real.
+const MAX_FALLOS_POLLING_CONSECUTIVOS = 10;
+
 async function revisarEstadoActual() {
   if (!tareaEnCurso) return;
   const { taskId, apiBase, perfilKey } = tareaEnCurso;
@@ -444,6 +452,7 @@ async function revisarEstadoActual() {
     const task = data?.data;
     if (!task) return;
 
+    tareaEnCurso.fallosConsecutivos = 0;
     const progreso = task.progress ?? 0;
     const state = task.state;
 
@@ -469,7 +478,18 @@ async function revisarEstadoActual() {
       mostrarProgreso("Generando guion, buscando material y renderizando…", progreso || 10);
     }
   } catch (err) {
-    // Silenciamos errores puntuales de polling; seguimos intentando.
+    if (!tareaEnCurso) return;
+    tareaEnCurso.fallosConsecutivos = (tareaEnCurso.fallosConsecutivos || 0) + 1;
+    if (tareaEnCurso.fallosConsecutivos >= MAX_FALLOS_POLLING_CONSECUTIVOS) {
+      detenerPolling();
+      btnGenerar.disabled = false;
+      mostrarError(
+        "Se perdió la conexión con el motor de video a mitad de la generación " +
+        "(el servidor puede haberse reiniciado). Intenta generar el video de nuevo."
+      );
+    }
+    // Antes de llegar al límite, se ignora el fallo en silencio y se sigue
+    // intentando — cubre blips puntuales de red o un redeploy que se recupera solo.
   }
 }
 
